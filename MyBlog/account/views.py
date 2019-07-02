@@ -19,8 +19,23 @@ def user_login(request):
         else:
             return HttpResponse('invalid login')
     if request.method == 'GET':
-        return render(request, 'account/login.html', {'form': forms.LoginForm})
+        login_form = forms.LoginForm()
+        return render(request, 'account/login.html', {'form': login_form})
 
 def user_logout(request):
     logout(request)
     return HttpResponseRedirect("/blog/blog_title")
+
+def user_register(request):
+    if request.method == 'POST':
+        user_form = forms.RegisterForm(request.POST)
+        if user_form.is_valid():
+            new_user = user_form.save(commit=False)
+            new_user.set_password(user_form.cleaned_data['password'])
+            new_user.save()
+            return user_login(request)
+        else:
+            return HttpResponse(user_form)
+    else:
+        user_form = forms.RegisterForm()
+        return render(request,'account/register.html', {'form': user_form})

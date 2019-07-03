@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
+from . import models
 
 class LoginForm(forms.Form):
     username = forms.CharField()
@@ -18,3 +19,7 @@ class RegisterForm(forms.ModelForm):
         if cd['password'] == cd['password2']:
             raise forms.ValidationError("password not match")
         return cd['password2']
+
+class UserInfoForm(forms.Form):
+    birth = forms.CharField()
+    phone = forms.CharField()

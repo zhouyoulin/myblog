@@ -1,7 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
-from . import forms
+from django.contrib.auth.models import User
+from . import forms, models
 
 # Create your views here.
 
@@ -39,3 +40,30 @@ def user_register(request):
     else:
         user_form = forms.RegisterForm()
         return render(request,'account/register.html', {'form': user_form})
+
+def user_info(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    # User.objects.get()
+    userInfos = models.UserInfo.objects.all()
+    userInfo = None
+    for userinfo in userInfos:
+        if userinfo.user.id == int(user_id):
+            userInfo = userinfo
+    if request.method == 'POST':
+        userInfo_form = forms.UserInfoForm(request.POST)
+        if userInfo_form.is_valid():
+            cd = userInfo_form.cleaned_data
+            print(cd)
+            if userInfo:
+                userInfo.birth = cd['birth']
+                userInfo.phone = cd['phone']
+                userInfo.user = user
+                userInfo.save()
+            else:
+                userInfo = models.UserInfo.objects.create(user=user,birth=cd['birth'],phone=cd['phone'])
+                userInfo.save()
+            return HttpResponseRedirect("/account/userInfo/"+user_id)
+        else:
+            return HttpResponse('form is invalid')
+    else:
+        return render(request, 'account/user_info.html',{'userInfo':userInfo})
